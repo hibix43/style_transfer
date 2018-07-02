@@ -25,10 +25,6 @@ class TrainNet():
         # 中間層の出力
         self.style_outputs = []
         self.contents_outputs = []
-        # 変換ネットワーク
-        # self.convert_model = model
-        # 変換ネットワークの出力を入力とする
-        # self.inputs_data = model.output_data
         # VGG16呼び出し
         self.vgg16 = VGG16()
         # 学習させない設定をする
