@@ -4,11 +4,12 @@
 import numpy as np
 import train_network
 from tensorflow.python.keras.layers import Input
-from tensorflow.python.keras.model import Model
-from tensorflow.python.keras.preprocessing.image import load_img,
-img_to_array, array_to_img
+from tensorflow.python.keras.models import Model
+from tensorflow.python.keras.preprocessing.image import load_img
+from tensorflow.python.keras.preprocessing.image import img_to_array
+from tensorflow.python.keras.preprocessing.image import array_to_img
 
-STYLE_IMAGE_PATH = './img/style/style.png'
+STYLE_IMAGE_PATH = './img/style/style.jpg'
 
 
 def load_image(image_shape):
@@ -26,11 +27,11 @@ def style_feature(input_shape):
     # 入力層
     style_input = Input(shape=input_shape, name='input_style')
     # スタイル画像を入力に、中間層の出力を取得
-    _ = train_net.rebuild_vgg16(style_input, True, False)
+    hidden_model = train_net.rebuild_vgg16(style_input, True, False)
     # スタイルから特徴量を抽出するモデル構築
     style_model = Model(
         inputs=style_input,
-        outputs=train_net.outputs
+        outputs=hidden_model.output
     )
 
     return style_model

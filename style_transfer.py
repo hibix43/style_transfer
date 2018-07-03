@@ -26,26 +26,37 @@ def build():
     input_shape = (224, 224, 3)
     # 変換ネットワーク
     convert_model = convert_network.build_network()
+    print('>> build convert model')
     # 学習ネットワーククラス
-    train_net = train_net.TrainNet(convert_model)
+    train_net = train_network.TrainNet()
     # 学習ネットワーク
-    train_model = train_net.rebuild_vgg16(convert_model.outputs, True, True)
+    train_model = train_net.rebuild_vgg16(convert_model.output,
+                                          True, True, convert_model)
+    print('>> build train model')
     # スタイル画像
     style_image = style_images.load_image(input_shape)
+    print('>> load style image')
     # スタイル特徴量抽出モデル
-    y_style_model = style_images.style_feature(style_image, input_shape)
+    y_style_model = style_images.style_feature(input_shape)
+    print('>> build y_style model')
     # スタイル特徴量を抽出する
-    y_style_pred = y_style_model.predict(style_img)
+    y_style_pred = y_style_model.predict(style_image)
+    print('>> get y_style_pred')
     # コンテンツ特徴量抽出モデル
     contents_model = contents_images.contents_feature(input_shape)
+    print('>> build contents model')
     # ジェネレータ生成
     generator = create_generator(y_style_pred, contents_model)
+    print('>> create generator')
     # コンパイル
-    compile_model(train_model)
+    train_model = compile_model(train_model)
+    print('>> compile train model')
     # 学習
     train(generator, train_model)
+    print('>> train start')
     # テスト
     test(input_shape, train_model)
+    print('>> test start')
 
 
 # モデルコンパイル
@@ -61,6 +72,8 @@ def compile_model(train_model):
         ],
         loss_weights=[1.0, 1.0, 1.0, 1.0, 3.0]
     )
+
+    return train_model
 
 
 def train(generator, train_model):
@@ -129,7 +142,8 @@ def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
     while True:
         epoch_counter += 1
         # シャッフル
-        np.random.shuffle(img_path_list) if shuffle
+        if shuffle:
+            np.random.shuffle(img_path_list)
         # バッチ単位
         for step in range(batch_steps_per_epoch):
             # インデックス確保
@@ -159,3 +173,7 @@ def get_images_array_from_path_list(img_path_list, image_size=(224, 224)):
                 img_to_array(load_img(img_path, image_size=image_size)),
                 axis=0) for img_path in img_path_list]
     return np.concatenate(img_list, axis=0)
+
+
+if __name__ == '__main__':
+    build()

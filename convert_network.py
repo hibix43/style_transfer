@@ -2,8 +2,8 @@
 # # -*- Coding: utf-8 -*-
 
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Conv2D,
-BatchNormalization, Add, Activation, Input, Lambda, Conv2DTranspose
+from tensorflow.python.keras.layers import (
+ Conv2D, BatchNormalization, Add, Activation, Input, Lambda, Conv2DTranspose)
 
 
 def build_residual_block(input_data):
@@ -36,7 +36,8 @@ def build_encoder(input_data):
     return x
 
 
-def build_decoder():
+def build_decoder(input_data):
+    x = input_data
     x = Conv2DTranspose(64, (3, 3), strides=2, padding='same')(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
@@ -50,7 +51,7 @@ def build_decoder():
     x = Activation('tanh')(x)
 
     # [0, 255]にスケール変換
-    output_data = Lambda(lambda x: (x + 1) * 127.5)(x)
+    output_data = Lambda(lambda xx: (xx + 1) * 127.5)(x)
 
     return output_data
 
@@ -61,7 +62,8 @@ def build_network(input_shape=(224, 224, 3)):
     # エンコーダ
     x = build_encoder(input_data)
     # ブロック作成
-    x = build_residual_block(x) for i in range(5)
+    for i in range(5):
+        x = build_residual_block(x)
     # デコーダ
     output_data = build_decoder(x)
     # モデル構築

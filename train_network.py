@@ -13,7 +13,7 @@ def preprocess_inputs(inputs):
 
 
 class TrainNet():
-    def __init__(self, model):
+    def __init__(self):
         # 特徴量を抽出する層
         self.style_layer_names = (
             'block1_conv2',
@@ -28,11 +28,18 @@ class TrainNet():
         # VGG16呼び出し
         self.vgg16 = VGG16()
         # 学習させない設定をする
-        layer.trainable = False for layer in self.vgg16.layers
+        for layer in self.vgg16.layers:
+            layer.trainable = False
 
-    def rebuild_vgg16(inputs_data, style_layer=True, contents_layer=True):
+    def rebuild_vgg16(self, input_data, style_layer=True,
+                      contents_layer=True, model=None):
+        # モデルの入力を指定
+        if model is not None:
+            model_input = model.input
+        else:
+            model_input = input_data
         # 正則化
-        l = Lambda(preprocess_inputs)(self.inputs_data)
+        l = Lambda(preprocess_inputs)(input_data)
         # VGG16を再構築
         for layer in self.vgg16.layers:
             l = layer(l)
@@ -41,10 +48,10 @@ class TrainNet():
                 self.style_outputs.append(l)
             if contents_layer and layer.name in self.content_layer_names:
                 self.contents_outputs.append(l)
+
         # モデル構築
         train_model = Model(
-            inputs=inputs_data,
-            output_data=(self.style_outputs if style_layer +
-                         self.contents_outputs if contents_layer)
+            inputs=model_input,
+            outputs=self.style_outputs + self.contents_outputs
         )
         return train_model
