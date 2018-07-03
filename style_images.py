@@ -5,9 +5,8 @@ import numpy as np
 import train_network
 from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.preprocessing.image import load_img
-from tensorflow.python.keras.preprocessing.image import img_to_array
-from tensorflow.python.keras.preprocessing.image import array_to_img
+from tensorflow.python.keras.preprocessing.image import (
+ load_img, img_to_array, array_to_img)
 
 STYLE_IMAGE_PATH = './img/style/style.jpg'
 

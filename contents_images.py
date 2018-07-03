@@ -2,6 +2,8 @@
 # -*- Coding: utf-8 -*-
 
 import train_network
+from tensorflow.python.keras.layers import Input
+from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import backend as K
 
 
