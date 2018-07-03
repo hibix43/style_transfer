@@ -5,8 +5,16 @@ import convert_network
 import train_network
 import style_images
 import contents_images
+import glob
+import datetime
 import numpy as np
+from os import path
 from math import ceil
+
+
+CONTENTS_IMAGES_PATH = ('img', 'contents', '*.jpg')
+BATCH_SIZE = 2
+EPOCH_SIZE = 10
 
 
 def build():
@@ -22,7 +30,32 @@ def build():
     # スタイル特徴量抽出モデル
     y_style_model = style_images.style_feature(style_image, input_shape)
     # スタイル特徴量を抽出する
-    y_style = y_style_model.predict(style_img)
+    y_style_pred = y_style_model.predict(style_img)
+    # コンテンツ特徴量抽出モデル
+    y_contents_model = contents_images.contents_feature(input_shape)
+    # ジェネレータ生成
+    generator = create_generator(y_style_pred, y_contents_model)
+
+
+def train():
+    pass
+
+
+def make_save_dir():
+    pass
+
+
+# コンテンツ入力画像のパスをすべて取得
+def get_img_path_list():
+    img_path = path.join(CONTENTS_IMAGES_PATH)
+    img_path_list = glob.glob(img_path)
+
+
+# ジェネレータの生成
+def create_generator(y_style_pred, y_contents_model):
+    return train_generator_per_epoch(
+                    get_img_path_list(), BATCH_SIZE,
+                    y_style_pred, y_contents_model, True, True)
 
 
 # 画像パスリストから画像データ配列を得る
@@ -37,7 +70,7 @@ def get_images_array_from_path_list(img_path_list, image_size=(224, 224)):
 
 
 # 1エポックあたりの訓練データジェネレータ
-def train_generator_per_epoch(img_path_list, batch_size, y_style,
+def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
                               y_contents_model, shuffle=True, epoches=None):
     # 訓練データ数
     train_img_size = len(img_path_list)
@@ -61,11 +94,11 @@ def train_generator_per_epoch(img_path_list, batch_size, y_style,
             batch_input_images = get_images_array_from_path_list(
                                                    img_path_list[start:end])
             # バッチ単位に拡張
-            y_styles = np.array([y_style] * batch_input_images.shape[0])
+            y_styles_pred = np.array([y_style] * batch_input_images.shape[0])
             # コンテンツ特徴量の抽出
             y_contents = y_contents_model.predict(batch_input_images)
             # ジェネレータとして値を出力
-            yield batch_input_images, y_styles + [y_contents]
+            yield batch_input_images, y_styles_pred + [y_contents]
 
             # エポック数が指定されていて、上限に達した場合
             if epoches is not None and epoch_counter >= epoches:

@@ -2,6 +2,7 @@
 # -*- Coding: utf-8 -*-
 
 import train_network
+from tensorflow.python.keras import backend as K
 
 
 def contents_feature(input_shape):
@@ -18,3 +19,9 @@ def contents_feature(input_shape):
     )
 
     return contents_model
+
+
+# コンテンツ特徴量の損失関数
+def contents_feature_loss(y_contents, contents_pred):
+    # 二乗誤差
+    return K.sum(K.square(contents_pred - y_contents), axis=(1, 2, 3)) / 2.0

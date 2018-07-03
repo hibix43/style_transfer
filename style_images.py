@@ -34,3 +34,28 @@ def style_feature(input_shape):
     )
 
     return style_model
+
+
+# スタイル特徴量の損失関数
+def style_feature_loss(y_style, style_pred):
+    # 二乗誤差
+    return K.sum(K.square(
+        gram_matrix(style_pred) - gram_matrix(y_style)), axis=(1, 2)) / 2.0
+
+
+# グラム行列　=> スタイルの近さを計測
+def gram_matrix(X):
+    # 軸の入れ替え => batch, channel, height, width
+    axis_replaced_X = K.prermute_dimensions(X, (0, 3, 2, 1))
+    replaced_shape = K.shape(axis_replaced_X)
+    # 特徴マップ（高さと幅を1つの軸に展開）の内積をとるためのshape
+    dot_shape = (replaced_shape[0], replaced_shape[1],
+                 replaced_shape[2]*replaced_shape[3])
+    # 実際に内積を計算する行列
+    dot_X = K.reshape(axis_replaced_X, dot_shape)
+    # 転置行列
+    dot_X_t = K.prermute_dimensions(dot_X, (0, 2, 1))
+    # 行列の内積
+    dot = K.batch_dot(dot_X, dot_X_t)
+
+    return dot
