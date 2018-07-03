@@ -5,6 +5,7 @@ import numpy as np
 import train_network
 from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras.models import Model
+from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.preprocessing.image import (
  load_img, img_to_array, array_to_img)
 
@@ -46,7 +47,7 @@ def style_feature_loss(y_style, style_pred):
 # グラム行列　=> スタイルの近さを計測
 def gram_matrix(X):
     # 軸の入れ替え => batch, channel, height, width
-    axis_replaced_X = K.prermute_dimensions(X, (0, 3, 2, 1))
+    axis_replaced_X = K.permute_dimensions(X, (0, 3, 2, 1))
     replaced_shape = K.shape(axis_replaced_X)
     # 特徴マップ（高さと幅を1つの軸に展開）の内積をとるためのshape
     dot_shape = (replaced_shape[0], replaced_shape[1],
@@ -54,7 +55,7 @@ def gram_matrix(X):
     # 実際に内積を計算する行列
     dot_X = K.reshape(axis_replaced_X, dot_shape)
     # 転置行列
-    dot_X_t = K.prermute_dimensions(dot_X, (0, 2, 1))
+    dot_X_t = K.permute_dimensions(dot_X, (0, 2, 1))
     # 行列の内積
     dot = K.batch_dot(dot_X, dot_X_t)
 
