@@ -58,7 +58,7 @@ def build():
     print('>> train finish')
     # テスト
     print('>> test start')
-    test(input_shape, train_model)
+    test(input_shape, convert_model)
 
 
 # モデルコンパイル
@@ -115,9 +115,11 @@ def test(input_shape, model):
     test_image = np.expand_dims(img_to_array(test_image), axis=0)
     # 変換
     predict = model.predict(test_image)
+    print('>> predict result shape={}'.format(predict[0].shape))
     # 保存できる画像に変換
-    # predict_image = array_to_img(predict[0][1:3])
-    # Image.fromarray(predict_image).save('./img/test/test_predict_save.png')
+    predict_image = array_to_img(predict[0])
+    # 保存
+    predict_image.save('./img/test/test_predict_save.png')
     print('>> Test OK !!')
 
 
