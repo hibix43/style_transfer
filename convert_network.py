@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# # -*- Coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import (

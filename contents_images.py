@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- Coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import train_network
 from tensorflow.python.keras.layers import Input

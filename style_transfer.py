@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# # -*- Coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import convert_network
 import train_network
@@ -11,7 +10,7 @@ from os import path, makedirs
 from math import ceil
 from datetime import datetime
 from pickle import dump
-from PIL import Image
+from tqdm import tqdm
 from tensorflow.python.keras.preprocessing.image import (
     load_img, img_to_array, array_to_img)
 from tensorflow.python.keras.optimizers import Adadelta
@@ -20,7 +19,6 @@ CONTENTS_IMAGES_PATH = 'img/contents/*.jpg'
 BATCH_SIZE = 2
 EPOCH_SIZE = 10
 TEST_IMAGE = './img/test/test.jpg'
-BATCH_STEP_PER_EPOCH = 100
 
 
 def build():
@@ -47,7 +45,7 @@ def build():
     contents_model = contents_images.contents_feature(input_shape)
     print('>> build contents model')
     # ジェネレータ生成
-    generator = create_generator(y_style_pred, contents_model)
+    generator = create_generator(y_style_pred, contents_model, EPOCH_SIZE)
     print('>> create generator')
     # コンパイル
     train_model = compile_model(train_model)
@@ -90,21 +88,29 @@ def train(generator, train_model):
     makedirs(weight_dir, exist_ok=True)
     # makedirs(trans_dir, exist_ok=True)
 
+    # 訓練データ数
+    train_imgs = len(get_img_path_list())
+    # 1エポックにおけるバッチ処理回数（切り上げ）
+    batch_step_per_epoch = ceil(train_imgs / BATCH_SIZE)
+
     # 損失
     losses = []
     # モデル保存タイミング
-    save_model_step = BATCH_STEP_PER_EPOCH
+    save_model_step = batch_step_per_epoch
 
-    # 学習ループ
-    for step, (x_train, y_train) in enumerate(generator):
-        # 学習
-        loss = train_model.train_on_batch(x_train, y_train)
-        losses.append(loss)
-        # 保存
-        if step % save_model_step == 0:
-            # モデル保存
-            train_model.save(path.join(
-                weight_dir, 'step{}_loss{}.h5'.format(step, loss[0])))
+    # 進捗バー
+    with tqdm(total=10*batch_step_per_epoch) as pbar:
+        # 学習ループ
+        for step, (x_train, y_train) in enumerate(generator):
+            # 学習
+            loss = train_model.train_on_batch(x_train, y_train)
+            losses.append(loss)
+            # 保存
+            if step % save_model_step == 0:
+                # モデル保存
+                train_model.save(path.join(weight_dir,
+                                 'step{}_loss{}.h5'.format(step, loss[0])))
+            pbar.update(1)
 
 
 # テスト
@@ -124,10 +130,10 @@ def test(input_shape, model):
 
 
 # ジェネレータの生成
-def create_generator(y_style_pred, y_contents_model):
+def create_generator(y_style_pred, y_contents_model, epoch=10):
     return train_generator_per_epoch(
                     get_img_path_list(), BATCH_SIZE,
-                    y_style_pred, y_contents_model, True, True)
+                    y_style_pred, y_contents_model, True, epoch)
 
 
 # コンテンツ入力画像のパスをすべて取得
@@ -143,7 +149,7 @@ def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
     # 訓練データ数
     train_imgs = len(img_path_list)
     # 1エポックにおけるバッチ処理回数（切り上げ）
-    BATCH_STEP_PER_EPOCH = ceil(train_imgs / batch_size)
+    batch_step_per_epoch = ceil(train_imgs / batch_size)
     # numpy配列化
     if not isinstance(img_path_list, np.ndarray):
         img_path_list = np.array(img_path_list)
@@ -156,7 +162,7 @@ def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
         if shuffle:
             np.random.shuffle(img_path_list)
         # バッチ単位
-        for step in range(BATCH_STEP_PER_EPOCH):
+        for step in range(batch_step_per_epoch):
             # インデックス確保
             start, end = batch_size * step, batch_size * (step + 1)
             # バッチ単位入力画像
@@ -170,10 +176,10 @@ def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
             # ジェネレータとして値を出力
             yield batch_input_images, y_styles_pred + [contents_pred]
 
-            # エポック数が指定されていて、上限に達した場合
-            if epoches is not None and epoch_counter >= epoches:
-                # ジェネレータ停止
-                raise StopIteration
+        # エポック数が指定されていて、上限に達した場合
+        if epoches is not None and epoch_counter >= epoches:
+            # ジェネレータ停止
+            raise StopIteration
 
 
 # 画像パスリストから画像データ配列を得る

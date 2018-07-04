@@ -1,6 +1,8 @@
 *.pickle
 *.png
 *.jpg
+*.h5
+*.zip
 /img/
 /model/
 /__pycache__/

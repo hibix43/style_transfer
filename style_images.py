@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# # -*- Coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import train_network
