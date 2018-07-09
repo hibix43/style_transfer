@@ -5,7 +5,7 @@ from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import Lambda
 
 
-def preprocess_inputs(inputs):
+def norm_inputs(inputs):
     """ VGG16に合うよう入力値を前処理する
         BGR変換と近似的中心化 """
     return (inputs[:, :, :, ::-1] - 120) / 255.0
@@ -31,14 +31,16 @@ class TrainNet():
             layer.trainable = False
 
     def rebuild_vgg16(self, input_data, style_layer=True,
-                      contents_layer=True, model=None):
-        # モデルの入力を指定
-        if model is not None:
-            model_input = model.input
+                      contents_layer=True, convert_model_input=None):
+        # Convert_model
+        if convert_model_input is not None:
+            model_input = convert_model_input
+        # style_image, contents_image
         else:
             model_input = input_data
+
         # 正則化
-        l = Lambda(preprocess_inputs)(input_data)
+        l = Lambda(norm_inputs)(input_data)
         # VGG16を再構築
         for layer in self.vgg16.layers:
             l = layer(l)

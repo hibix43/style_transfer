@@ -14,6 +14,8 @@ from tqdm import tqdm
 from tensorflow.python.keras.preprocessing.image import (
     load_img, img_to_array, array_to_img)
 from tensorflow.python.keras.optimizers import Adadelta
+from tensorflow.python.keras.utils import plot_model
+
 
 CONTENTS_IMAGES_PATH = 'img/contents/*.jpg'
 BATCH_SIZE = 2
@@ -30,7 +32,7 @@ def build():
     train_net = train_network.TrainNet()
     # 学習ネットワーク
     train_model = train_net.rebuild_vgg16(convert_model.output,
-                                          True, True, convert_model)
+                                          True, True, convert_model.input)
     print('>> build train model')
     # スタイル画像
     style_image = style_images.load_image(input_shape)
@@ -45,18 +47,19 @@ def build():
     contents_model = contents_images.contents_feature(input_shape)
     print('>> build contents model')
     # ジェネレータ生成
-    generator = create_generator(y_style_pred, contents_model, EPOCH_SIZE)
+    generator = create_generator(y_style_pred, contents_model)
     print('>> create generator')
     # コンパイル
     train_model = compile_model(train_model)
     print('>> compile train model')
     # 学習
     print('>> train start')
-    train(generator, train_model)
+    train(generator, train_model, convert_model)
     print('>> train finish')
     # テスト
-    print('>> test start')
-    test(input_shape, convert_model)
+    # print('>> test start')
+    # test(input_shape, convert_model)
+    # print('>> test finish')
 
 
 # モデルコンパイル
@@ -76,64 +79,77 @@ def compile_model(train_model):
     return train_model
 
 
-def train(generator, train_model):
+def make_train_result_datas_dir():
     # 現在の時刻を取得
     now = datetime.now()
     # ディレクトリ名
-    # log_dir = 'model/{}'.format(now)
-    weight_dir = 'model/{}/weight'.format(now.strftime('%Y-%m-%d_%H-%M-%S'))
-    # trans_dir = 'model/{}/trans'.format(now)
+    log_dir = 'model/{}/log'.format(now)
+    weight_loss_dir = 'model/{}/weight_loss'.format(
+                       now.strftime('%Y-%m-%d_%H-%M-%S'))
+    transfer_dir = 'model/{}/transfer'.format(now)
     # ディレクトリ生成
-    # makedirs(log_dir, exist_ok=True)
-    makedirs(weight_dir, exist_ok=True)
-    # makedirs(trans_dir, exist_ok=True)
+    makedirs(log_dir, exist_ok=True)
+    makedirs(weight_loss_dir, exist_ok=True)
+    makedirs(transfer_dir, exist_ok=True)
+
+
+def train(generator, train_model, convert_model):
+    # plot_model(train_model, to_file='tran_model.png')
+
+    # フォルダ作成
+    make_train_result_datas_dir()
 
     # 訓練データ数
     train_imgs = len(get_img_path_list())
     # 1エポックにおけるバッチ処理回数（切り上げ）
     batch_step_per_epoch = ceil(train_imgs / BATCH_SIZE)
-
-    # 損失
-    losses = []
-    # モデル保存タイミング
+    # 学習結果出力周期
+    train_output_period = 100
+    # 変換テスト出力周期
+    test_output_priod = 1000
+    # モデル保存周期
     save_model_step = batch_step_per_epoch
 
     # 進捗バー
-    with tqdm(total=10*batch_step_per_epoch) as pbar:
-        # 学習ループ
-        for step, (x_train, y_train) in enumerate(generator):
-            # 学習
-            loss = train_model.train_on_batch(x_train, y_train)
-            losses.append(loss)
-            # 保存
-            if step % save_model_step == 0:
-                # モデル保存
-                train_model.save(path.join(weight_dir,
-                                 'step{}_loss{}.h5'.format(step, loss[0])))
-            pbar.update(1)
+    # with tqdm(total=EPOCH_SIZE*batch_step_per_epoch) as pbar:
+    # 学習ループ
+    for step, (x_train, y_train) in enumerate(generator):
+        # 学習
+        loss = train_model.train_on_batch(x_train, y_train)
+        # 経過出力
+        if step % train_output_period == 0:
+            print('>> step={} , loss={}'.format(step, loss[0]))
+        # 変換テスト
+        if step % test_output_priod == 0:
+            print('>> Test!! step={} , loss={}'.format(step, loss[0]))
+            test(convert_model, step)
+        # 保存
+        if step % save_model_step == 0:
+            # モデル保存
+            train_model.save(path.join(weight_dir,
+                             'step{}_loss{}.h5'.format(step, loss[0])))
+    #        pbar.update(1)
 
 
 # テスト
-def test(input_shape, model):
+def test(covert_model, step, input_shape=(224, 224, 3)):
     # テスト画像読み込み
     test_image = load_img(TEST_IMAGE, target_size=input_shape[:2])
     # 入力用に変換
     test_image = np.expand_dims(img_to_array(test_image), axis=0)
     # 変換
-    predict = model.predict(test_image)
-    print('>> predict result shape={}'.format(predict[0].shape))
+    predict = covert_model.predict(test_image)
     # 保存できる画像に変換
     predict_image = array_to_img(predict[0])
     # 保存
-    predict_image.save('./img/test/test_predict_save.png')
-    print('>> Test OK !!')
+    predict_image.save('./img/test/predicted_test_step{}.png'.format(step))
 
 
 # ジェネレータの生成
-def create_generator(y_style_pred, y_contents_model, epoch=10):
+def create_generator(y_style_pred, y_contents_model):
     return train_generator_per_epoch(
                     get_img_path_list(), BATCH_SIZE,
-                    y_style_pred, y_contents_model, True, epoch)
+                    y_style_pred, y_contents_model, True, EPOCH_SIZE)
 
 
 # コンテンツ入力画像のパスをすべて取得

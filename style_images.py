@@ -25,13 +25,12 @@ def style_feature(input_shape):
     train_net = train_network.TrainNet()
     # 入力層
     style_input = Input(shape=input_shape, name='input_style')
-    # スタイル画像を入力に、中間層の出力を取得
-    hidden_model = train_net.rebuild_vgg16(style_input, True, False)
     # スタイルから特徴量を抽出するモデル構築
-    style_model = Model(
-        inputs=style_input,
-        outputs=hidden_model.output
-    )
+    style_model = train_net.rebuild_vgg16(style_input, True, False)
+    # style_model = Model(
+    #    inputs=style_input,
+    #    outputs=train_net.style_outputs
+    # )
 
     return style_model
 
@@ -40,7 +39,7 @@ def style_feature(input_shape):
 def style_feature_loss(y_style, style_pred):
     # 二乗誤差
     return K.sum(K.square(
-        gram_matrix(style_pred) - gram_matrix(y_style)), axis=(1, 2)) / 2.0
+        gram_matrix(style_pred) - gram_matrix(y_style)), axis=(1, 2))
 
 
 # グラム行列　=> スタイルの近さを計測
@@ -57,5 +56,5 @@ def gram_matrix(X):
     dot_X_t = K.permute_dimensions(dot_X, (0, 2, 1))
     # 行列の内積
     dot = K.batch_dot(dot_X, dot_X_t)
-
-    return dot
+    norm = K.prod(K.cast(replaced_shape[1:], 'float32'))
+    return dot / norm
