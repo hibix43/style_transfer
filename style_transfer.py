@@ -79,25 +79,22 @@ def compile_model(train_model):
     return train_model
 
 
-def make_train_result_datas_dir():
-    # 現在の時刻を取得
-    now = datetime.now()
-    # ディレクトリ名
-    log_dir = 'model/{}/log'.format(now)
-    weight_loss_dir = 'model/{}/weight_loss'.format(
-                       now.strftime('%Y-%m-%d_%H-%M-%S'))
-    transfer_dir = 'model/{}/transfer'.format(now)
-    # ディレクトリ生成
-    makedirs(log_dir, exist_ok=True)
-    makedirs(weight_loss_dir, exist_ok=True)
-    makedirs(transfer_dir, exist_ok=True)
-
-
 def train(generator, train_model, convert_model):
     # plot_model(train_model, to_file='tran_model.png')
 
     # フォルダ作成
-    make_train_result_datas_dir()
+    # make_train_result_datas_dir()
+    # 現在の時刻を取得
+    now = datetime.now()
+    # ディレクトリ名
+    # log_dir = 'model/{}/log'.format(now)
+    weight_loss_dir = 'model/{}/weight_loss'.format(
+                       now.strftime('%Y-%m-%d_%H-%M-%S'))
+    # transfer_dir = 'model/{}/transfer'.format(now)
+    # ディレクトリ生成
+    # makedirs(log_dir, exist_ok=True)
+    makedirs(weight_loss_dir, exist_ok=True)
+    # makedirs(transfer_dir, exist_ok=True)
 
     # 訓練データ数
     train_imgs = len(get_img_path_list())
@@ -126,7 +123,7 @@ def train(generator, train_model, convert_model):
         # 保存
         if step % save_model_step == 0:
             # モデル保存
-            train_model.save(path.join(weight_dir,
+            train_model.save(path.join(weight_loss_dir,
                              'step{}_loss{}.h5'.format(step, loss[0])))
     #        pbar.update(1)
 
