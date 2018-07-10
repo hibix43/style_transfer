@@ -106,14 +106,14 @@ def train(generator, train_model, convert_model):
         # 学習
         loss = train_model.train_on_batch(x_train, y_train)
         # 経過出力
-        if step % train_output_period == 0:
+        if step % train_output_period == 0 or step == train_imgs:
             print('>> step={} , loss={}'.format(step, loss[0]))
         # 変換テスト
-        if step % test_output_priod == 0:
+        if step % test_output_priod == 0 or step == train_imgs:
             print('>> Test!! step={} , loss={}'.format(step, loss[0]))
             test(convert_model, step, now.strftime('%Y-%m-%d_%H-%M-%S'))
         # 保存
-        if step % weight_loss_step == 0 or step == train_generator_per_epoch:
+        if step % weight_loss_step == 0 or step == train_imgs:
             # 保存
             train_model.save(path.join(weight_loss_dir,
                              'step{}_loss{}.h5'.format(step, loss[0])))
