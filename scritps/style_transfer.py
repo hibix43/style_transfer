@@ -78,16 +78,14 @@ def train(generator, train_model, convert_model):
 
     # 現在の時刻を取得
     now = datetime.now()
+    now = now.strftime('%Y-%m-%d_%H-%M-%S')
     # ディレクトリ名
-    weight_loss_dir = 'model/{}/weight_loss'.format(
-        now.strftime('%Y-%m-%d_%H-%M-%S'))
+    weight_loss_dir = 'model/{}/weight_loss'.format(now)
     # ディレクトリ生成
     makedirs(weight_loss_dir, exist_ok=True)
-    makedirs('./img/test/{}'.format(
-        now.strftime('%Y-%m-%d_%H-%M-%S')), exist_ok=True)
+    makedirs('./img/test/{}'.format(now), exist_ok=True)
     # JSONにモデル構造を保存
-    json_name = 'model/{}/model_struct.json'.format(
-            now.strftime('%Y-%m-%d_%H-%M-%S'))
+    json_name = 'model/{}/model_struct.json'.format(now)
     open(json_name, 'w').write(train_model.to_json())
 
     # 訓練データ数
@@ -111,7 +109,7 @@ def train(generator, train_model, convert_model):
         # 変換テスト
         if step % test_output_priod == 0:
             print('>> Test!! step={} , loss={}'.format(step, loss[0]))
-            test(convert_model, step, now.strftime('%Y-%m-%d_%H-%M-%S'))
+            test(convert_model, now, step)
         # 保存
         if step % weight_loss_step == 0 or step == train_generator_per_epoch:
             # 保存
@@ -130,8 +128,7 @@ def test(covert_model, step, now, input_shape=(224, 224, 3)):
     # 保存できる画像に変換
     predict_image = array_to_img(predict[0])
     # 保存
-    predict_image.save('./img/test/{}/predicted_step{}.jpg'.format(
-        now, step))
+    predict_image.save('./img/test/{}/predicted_step{}.jpg'.format(now, step))
 
 
 # ジェネレータの生成
