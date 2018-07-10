@@ -3,7 +3,7 @@
 *.jpg
 *.h5
 *.zip
+*.json
+*.pyc
 /img/
 /model/
-__pycache__/
-.vscode/
