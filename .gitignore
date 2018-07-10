@@ -1,9 +1,9 @@
 *.pickle
-*.png
-*.jpg
 *.h5
 *.zip
 *.json
 *.pyc
 /img/
+/img/*.png
+/img/*.jpg
 /model/
