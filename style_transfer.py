@@ -37,13 +37,13 @@ def build():
     style_image = style_images.load_image(input_shape)
     print('>> load style image')
     # スタイル特徴量抽出モデル
-    y_style_model = style_images.style_feature(train_net)
+    y_style_model = style_images.style_feature()
     print('>> build y_style model')
     # スタイル特徴量を抽出する
     y_style_pred = y_style_model.predict(style_image)
     print('>> get y_style_pred')
     # コンテンツ特徴量抽出モデル
-    contents_model = contents_images.contents_feature(train_net)
+    contents_model = contents_images.contents_feature()
     print('>> build contents model')
     # ジェネレータ生成
     generator = create_generator(y_style_pred, contents_model)
