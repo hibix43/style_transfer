@@ -13,6 +13,7 @@ from tensorflow.python.keras.preprocessing.image import (
     load_img, img_to_array, array_to_img)
 from tensorflow.python.keras.optimizers import Adadelta
 from tensorflow.python.keras.utils import plot_model
+import sys
 
 
 CONTENTS_IMAGES_PATH = 'img/contents/*.jpg'
@@ -26,23 +27,23 @@ def build():
     # 変換ネットワーク
     convert_model = convert_network.build_network()
     print('>> build convert model')
-    # 学習ネットワーククラス
+    # 学習ネットワークインスタンス化
     train_net = train_network.TrainNet()
-    # 学習ネットワーク
-    train_model = train_net.rebuild_vgg16(convert_model.output,
-                                          True, True, convert_model.input)
+    # 学習ネットワーク構築
+    train_model = train_net.rebuild_vgg16(
+        True, True, input_shape, convert_model.output, convert_model.input)
     print('>> build train model')
     # スタイル画像
     style_image = style_images.load_image(input_shape)
     print('>> load style image')
     # スタイル特徴量抽出モデル
-    y_style_model = style_images.style_feature(input_shape)
+    y_style_model = style_images.style_feature(train_net)
     print('>> build y_style model')
     # スタイル特徴量を抽出する
     y_style_pred = y_style_model.predict(style_image)
     print('>> get y_style_pred')
     # コンテンツ特徴量抽出モデル
-    contents_model = contents_images.contents_feature(input_shape)
+    contents_model = contents_images.contents_feature(train_net)
     print('>> build contents model')
     # ジェネレータ生成
     generator = create_generator(y_style_pred, contents_model)
@@ -67,7 +68,7 @@ def compile_model(train_model):
             style_images.style_feature_loss,
             contents_images.contents_feature_loss
         ],
-        loss_weights=[1.0, 1.0, 1.0, 1.0, 1.0]
+        loss_weights=[1.0, 1.0, 1.0, 1.0, 4.0]
     )
 
     return train_model
@@ -106,14 +107,14 @@ def train(generator, train_model, convert_model):
         # 学習
         loss = train_model.train_on_batch(x_train, y_train)
         # 経過出力
-        if step % train_output_period == 0 or step == train_imgs:
+        if step % train_output_period == 0 or step == train_imgs-1:
             print('>> step={} , loss={}'.format(step, loss[0]))
         # 変換テスト
-        if step % test_output_priod == 0 or step == train_imgs:
+        if step % test_output_priod == 0 or step == train_imgs-1:
             print('>> Test!! step={} , loss={}'.format(step, loss[0]))
             test(convert_model, step, now.strftime('%Y-%m-%d_%H-%M-%S'))
         # 保存
-        if step % weight_loss_step == 0 or step == train_imgs:
+        if step % weight_loss_step == 0 or step == train_imgs-1:
             # 保存
             train_model.save(path.join(weight_loss_dir,
                              'step{}_loss{}.h5'.format(step, loss[0])))

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import train_network
-from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.preprocessing.image import (
@@ -11,7 +9,7 @@ from tensorflow.python.keras.preprocessing.image import (
 STYLE_IMAGE_PATH = './img/style/style.jpg'
 
 
-def load_image(image_shape):
+def load_image(image_shape=(224, 224, 3)):
     # スタイル画像の読み込み
     style_image = load_img(STYLE_IMAGE_PATH, target_size=image_shape[:2])
     # numpy配列に変換
@@ -20,17 +18,9 @@ def load_image(image_shape):
     return np_style_image
 
 
-def style_feature(input_shape):
-    # 学習ネットワーク
-    train_net = train_network.TrainNet()
-    # 入力層
-    style_input = Input(shape=input_shape, name='input_style')
+def style_feature(train_net):
     # スタイルから特徴量を抽出するモデル構築
-    style_model = train_net.rebuild_vgg16(style_input, True, False)
-    # style_model = Model(
-    #    inputs=style_input,
-    #    outputs=train_net.style_outputs
-    # )
+    style_model = train_net.rebuild_vgg16(True, False, 'input_style')
 
     return style_model
 

@@ -2,7 +2,7 @@
 
 from tensorflow.python.keras.applications.vgg16 import VGG16
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Lambda
+from tensorflow.python.keras.layers import Lambda, Input
 
 
 def norm_inputs(inputs):
@@ -12,6 +12,12 @@ def norm_inputs(inputs):
 
 
 class TrainNet():
+    # VGG16呼び出し
+    vgg16 = VGG16()
+    # 学習させない設定をする
+    for layer in vgg16.layers:
+        layer.trainable = False
+
     def __init__(self):
         # 特徴量を抽出する層
         self.style_layer_names = (
@@ -24,25 +30,21 @@ class TrainNet():
         # 中間層の出力
         self.style_outputs = []
         self.contents_outputs = []
-        # VGG16呼び出し
-        self.vgg16 = VGG16()
-        # 学習させない設定をする
-        for layer in self.vgg16.layers:
-            layer.trainable = False
 
-    def rebuild_vgg16(self, input_data, style_layer=True,
-                      contents_layer=True, convert_model_input=None):
+    def rebuild_vgg16(self, style_layer=True, contents_layer=True,
+                      input_name=None, input_shape=(224, 224, 3),
+                      train_input_data=None, convert_model_input=None):
         # Convert_model
         if convert_model_input is not None:
             model_input = convert_model_input
         # style_image, contents_image
         else:
-            model_input = input_data
+            model_input = Input(shape=input_shape, name=input_name)
 
         # 正則化
-        l = Lambda(norm_inputs)(input_data)
+        l = Lambda(norm_inputs)(train_input_data)
         # VGG16を再構築
-        for layer in self.vgg16.layers:
+        for layer in svgg16.layers:
             l = layer(l)
             # 特徴量を抽出する中間層の出力を取得
             if style_layer and layer.name in self.style_layer_names:

@@ -4,10 +4,11 @@ import glob
 import numpy as np
 import convert_network
 import train_network
-from tensorflow.python.keras.models import load_model
+from tensorflow.python.keras.models import load_model, model_from_json
 from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras.preprocessing.image import (
     load_img, img_to_array, array_to_img)
+from tensorflow.python.keras.applications.vgg16 import VGG16
 
 
 # テスト
@@ -18,7 +19,7 @@ def test(covert_model, images_list, input_shape=(224, 224, 3)):
         # 保存できる画像に変換
         predict_image = array_to_img(predict[i])
         # 保存
-        file_name = f'./img/test/predicted_images/test{i}.jpg'
+        file_name = f'./production/predicted_images/test{i}.jpg'
         predict_image.save(file_name)
         print(f'>> predict! test{i}.jpg')
 
@@ -27,6 +28,25 @@ def test(covert_model, images_list, input_shape=(224, 224, 3)):
 def get_img_path_list(path):
     img_path_list = glob.glob(path)
     return img_path_list
+
+
+# ワイルドカードからファイルを取得する
+def get_path_using_glob(path):
+    return glob.glob(path)
+
+"""
+def get_vgg16_layer_dict():
+    layers = {}
+    vgg16 = VGG16()
+    # 学習させない設定をする
+    print(vgg16.layers[0])
+    for layer in vgg16.layers:
+        layer.trainable = False
+        print(layer)
+        # layers[layer['name']] = layer
+    print(layers)
+    return layers
+"""
 
 
 # 画像パスリストから画像データ配列を得る
@@ -38,8 +58,13 @@ def get_images_array_from_path_list(img_path_list, image_size=(224, 224)):
 
 
 if __name__ == '__main__':
-    weight_loss_name = './model/step48150_loss73.20453643798828.h5'
-    test_images_path = 'img/test/test_images/*.jpg'
+    # model_json_path = 'production/*.json'
+    weight_loss_path = 'production/*.h5'
+    test_images_path = 'production/test_images/*.jpg'
+
+    # model_json_path = get_path_using_glob(model_json_path)
+    weight_loss_path = get_path_using_glob(weight_loss_path)
+    test_images_path = get_path_using_glob(test_images_path)
 
     # 変換ネットワーク
     convert_model = convert_network.build_network()
@@ -47,12 +72,19 @@ if __name__ == '__main__':
     network = train_network.TrainNet()
     model = network.rebuild_vgg16(convert_model.output,
                                   True, True, convert_model.input)
+
+    # モデル読み込み
+    # model_json_path = open(model_json_path[0]).read()
+    # input_data = Input(shape=(1, 224, 224, 3))
+    # model = model_from_json(model_json_path, get_vgg16_layer_dict())
+    # model = model_from_json(model_json_path)
+
+    print('>> load model.')
     # 重み読み込み
-    model.load_weights(weight_loss_name)
+    model.load_weights(weight_loss_path[0])
     print('>> load weights.')
     # 画像読み込み
-    images_list = get_images_array_from_path_list(
-               get_img_path_list(test_images_path))
+    images_list = get_images_array_from_path_list(test_images_path)
     print('>> get image path.')
     # 変換
     print('>> test start.')
