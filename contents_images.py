@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from tensorflow.python.keras.models import Model
+from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras import backend as K
 
 
 def contents_feature(train_net):
+    input_data = Input(shape=input_shape, name='input_contents')
     # コンテンツ画像から特徴量を抽出するモデル構築
-    contents_model = train_net.rebuild_vgg16(False, True, 'input_contents')
+    contents_model = train_net.rebuild_vgg16(False, True, input_data)
 
     return contents_model
 

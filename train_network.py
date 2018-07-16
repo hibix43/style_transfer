@@ -2,7 +2,7 @@
 
 from tensorflow.python.keras.applications.vgg16 import VGG16
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Lambda, Input
+from tensorflow.python.keras.layers import Lambda
 
 
 def norm_inputs(inputs):
@@ -32,14 +32,13 @@ class TrainNet():
         self.contents_outputs = []
 
     def rebuild_vgg16(self, style_layer=True, contents_layer=True,
-                      input_name=None, input_shape=(224, 224, 3),
-                      train_input_data=None, convert_model_input=None):
+                      train_input_data, convert_model_input=None):
         # Convert_model
         if convert_model_input is not None:
             model_input = convert_model_input
         # style_image, contents_image
         else:
-            model_input = Input(shape=input_shape, name=input_name)
+            model_input = train_input_data
 
         # 正則化
         l = Lambda(norm_inputs)(train_input_data)

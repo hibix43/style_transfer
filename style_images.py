@@ -2,6 +2,7 @@
 
 import numpy as np
 from tensorflow.python.keras.models import Model
+from tensorflow.python.keras.layers import Input
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.preprocessing.image import (
  load_img, img_to_array, array_to_img)
@@ -18,9 +19,10 @@ def load_image(image_shape=(224, 224, 3)):
     return np_style_image
 
 
-def style_feature(train_net):
+def style_feature(train_net, input_shape=(224, 224, 3)):
+    input_data = Input(shape=input_shape, name='input_style')
     # スタイルから特徴量を抽出するモデル構築
-    style_model = train_net.rebuild_vgg16(True, False, 'input_style')
+    style_model = train_net.rebuild_vgg16(True, False, input_data)
 
     return style_model
 
