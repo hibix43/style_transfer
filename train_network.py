@@ -44,7 +44,7 @@ class TrainNet():
         # 正則化
         l = Lambda(norm_inputs)(train_input_data)
         # VGG16を再構築
-        for layer in vgg16.layers:
+        for layer in TrainNet.vgg16.layers:
             l = layer(l)
             # 特徴量を抽出する中間層の出力を取得
             if style_layer and layer.name in self.style_layer_names:
