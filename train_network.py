@@ -31,8 +31,8 @@ class TrainNet():
         self.style_outputs = []
         self.contents_outputs = []
 
-    def rebuild_vgg16(self, style_layer=True, contents_layer=True,
-                      train_input_data, convert_model_input=None):
+    def rebuild_vgg16(self, train_input_data, style_layer=True,
+                      contents_layer=True, convert_model_input=None):
         # Convert_model
         if convert_model_input is not None:
             model_input = convert_model_input

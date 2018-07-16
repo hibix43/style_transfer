@@ -22,7 +22,7 @@ def load_image(image_shape=(224, 224, 3)):
 def style_feature(train_net, input_shape=(224, 224, 3)):
     input_data = Input(shape=input_shape, name='input_style')
     # スタイルから特徴量を抽出するモデル構築
-    style_model = train_net.rebuild_vgg16(True, False, input_data)
+    style_model = train_net.rebuild_vgg16(input_data, True, False)
 
     return style_model
 

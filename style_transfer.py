@@ -31,7 +31,7 @@ def build():
     train_net = train_network.TrainNet()
     # 学習ネットワーク構築
     train_model = train_net.rebuild_vgg16(
-        True, True, convert_model.output, convert_model.input)
+        convert_model.output, True, True, convert_model.input)
     print('>> build train model')
     # スタイル画像
     style_image = style_images.load_image(input_shape)

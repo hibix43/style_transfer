@@ -8,7 +8,7 @@ from tensorflow.python.keras import backend as K
 def contents_feature(train_net):
     input_data = Input(shape=input_shape, name='input_contents')
     # コンテンツ画像から特徴量を抽出するモデル構築
-    contents_model = train_net.rebuild_vgg16(False, True, input_data)
+    contents_model = train_net.rebuild_vgg16(input_data, False, True)
 
     return contents_model
 
