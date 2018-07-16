@@ -6,7 +6,7 @@ from tensorflow.python.keras import backend as K
 import train_network
 
 
-def contents_feature(train_net):
+def contents_feature():
     input_data = Input(shape=input_shape, name='input_contents')
     # 学習ネットワークインスタンス化
     train_net = train_network.TrainNet()
