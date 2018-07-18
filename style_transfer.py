@@ -13,13 +13,12 @@ from tensorflow.python.keras.preprocessing.image import (
     load_img, img_to_array, array_to_img)
 from tensorflow.python.keras.optimizers import Adadelta
 from tensorflow.python.keras.utils import plot_model
-import sys
-
 
 CONTENTS_IMAGES_PATH = 'img/contents/*.jpg'
+STYLE_IMAGE_PATH = './img/style/style.jpg'
+TEST_IMAGE = './img/test/test.jpg'
 BATCH_SIZE = 2
 EPOCH_SIZE = 10
-TEST_IMAGE = './img/test/test.jpg'
 
 
 def build():
@@ -34,7 +33,7 @@ def build():
         convert_model.output, True, True, convert_model.input)
     print('>> build train model')
     # スタイル画像
-    style_image = style_images.load_image(input_shape)
+    style_image = style_images.load_image(STYLE_IMAGE_PATH, input_shape)
     print('>> load style image')
     # スタイル特徴量抽出モデル
     y_style_model = style_images.style_feature()

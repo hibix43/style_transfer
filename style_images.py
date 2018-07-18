@@ -8,12 +8,10 @@ from tensorflow.python.keras.preprocessing.image import (
  load_img, img_to_array, array_to_img)
 import train_network
 
-STYLE_IMAGE_PATH = './img/style/style.jpg'
 
-
-def load_image(image_shape=(224, 224, 3)):
+def load_image(image_path, image_shape=(224, 224, 3)):
     # スタイル画像の読み込み
-    style_image = load_img(STYLE_IMAGE_PATH, target_size=image_shape[:2])
+    style_image = load_img(image_path, target_size=image_shape[:2])
     # numpy配列に変換
     np_style_image = np.expand_dims(img_to_array(style_image), axis=0)
 
