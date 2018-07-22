@@ -3,6 +3,8 @@
 *.zip
 *.json
 *.pyc
+*.ipynb
 /img/
 /production/
 /model/
+/.ipynb_checkpoints/
