@@ -16,15 +16,15 @@ from tensorflow.python.keras.layers import (
 DATA_IMAGES_DIR_PATH = 'img/contents/'
 TRAIN_DIR = 'super_resolution_train/'
 TEST_DIR = 'super_resolution_test/'
-DATA_NUM = 10700
+DATA_NUM = 1000
 BATCH_SIZE = 20
 
 
-# 入力画像のパスをすべて取得
+# 入力画像のパスをまとめて取得
 def get_img_path_list(path):
     img_path = ''.join([path, '*.jpg'])
     img_path_list = glob.glob(img_path)
-    return img_path_list
+    return img_path_list[:DATA_NUM]
 
 
 # 訓練データとテストデータを別フォルダに分ける
@@ -65,14 +65,14 @@ def create_low_resolution_image(image, low_scale=2.0):
     # 強引にサイズを小さくする
     low_resolution_image = image.resize(low_image_size, 3)
     # 大きくして低解像化
-    low_image_size = low_resolution_image.resize(image.size, 3)
+    low_resolution_image = low_resolution_image.resize(image.size, 3)
     # 配列に戻して返す
     return img_to_array(low_resolution_image)
 
 
 # ジェネレータ
 def low_resolution_image_generator(data_dir, mode, scale,
-                                   load_size=(448, 448, 3),
+                                   load_size=(448, 448),
                                    batch_size=BATCH_SIZE,
                                    shuffle=True):
     # ジェネレータ
@@ -81,7 +81,7 @@ def low_resolution_image_generator(data_dir, mode, scale,
         classes=[mode],
         class_mode=None,
         color_mode='rgb',
-        target_size=load_size[:2],
+        target_size=load_size,
         batch_size=batch_size,
         shuffle=shuffle
     )
@@ -147,16 +147,16 @@ def model_fit_generator(model, generator, x, y, train_size):
         generator,
         validation_data=(x, y),
         step_per_epoch=train_size//BATCH_SIZE,
-        epochs=5
+        epochs=50
     )
 
 
 if __name__ == '__main__':
     train_size, test_size = split_datas_folder()
     train_data_generator = low_resolution_image_generator(
-        DATA_IMAGES_DIR_PATH + TRAIN_DIR, 'train', 2)
+        DATA_IMAGES_DIR_PATH, TRAIN_DIR[:-1], 2)
     test_x, test_y = next(low_resolution_image_generator(
-        DATA_IMAGES_DIR_PATH + TEST_DIR, 'test', 2,
+        DATA_IMAGES_DIR_PATH, TEST_DIR[:-1], 2,
         batch_size=test_size, shuffle=False
     ))
     # モデル
