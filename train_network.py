@@ -12,13 +12,14 @@ def norm_inputs(inputs):
 
 
 class TrainNet():
-    # VGG16呼び出し
-    vgg16 = VGG16()
-    # 学習させない設定をする
-    for layer in vgg16.layers:
-        layer.trainable = False
+    vgg16 = None
 
-    def __init__(self):
+    def __init__(self, input_shape=(224, 224, 3)):
+        # VGG16呼び出し
+        TrainNet.vgg16 = VGG16(include_top=False, input_shape=input_shape)
+        # 学習させない設定をする
+        for layer in TrainNet.vgg16.layers:
+            layer.trainable = False
         # 特徴量を抽出する層
         self.style_layer_names = (
             'block1_conv2',

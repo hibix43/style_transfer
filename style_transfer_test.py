@@ -34,20 +34,6 @@ def get_img_path_list(path):
 def get_path_using_glob(path):
     return glob.glob(path)
 
-"""
-def get_vgg16_layer_dict():
-    layers = {}
-    vgg16 = VGG16()
-    # 学習させない設定をする
-    print(vgg16.layers[0])
-    for layer in vgg16.layers:
-        layer.trainable = False
-        print(layer)
-        # layers[layer['name']] = layer
-    print(layers)
-    return layers
-"""
-
 
 # 画像パスリストから画像データ配列を得る
 def get_images_array_from_path_list(img_path_list, image_size=(224, 224)):
@@ -68,9 +54,10 @@ if __name__ == '__main__':
     test_images_path = get_path_using_glob(test_images_path)
 
     # 変換ネットワーク
-    convert_model = convert_network.build_network()
+    input_shape = (224, 224, 3)
+    convert_model = convert_network.build_network(input_shape)
     # モデル構築
-    network = train_network.TrainNet()
+    network = train_network.TrainNet(input_shape)
     model = network.rebuild_vgg16(convert_model.output,
                                   True, True, convert_model.input)
 
@@ -85,9 +72,10 @@ if __name__ == '__main__':
     model.load_weights(weight_loss_path[0])
     print('>> load weights.')
     # 画像読み込み
-    images_list = get_images_array_from_path_list(test_images_path)
+    images_list = get_images_array_from_path_list(
+        test_images_path, input_shape[:2])
     print('>> get image path.')
     # 変換
     print('>> test start.')
-    test(convert_model, images_list)
+    test(convert_model, images_list, input_shape)
     print('>> test finish.')

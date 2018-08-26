@@ -24,10 +24,10 @@ EPOCH_SIZE = 10
 def build():
     input_shape = (224, 224, 3)
     # 変換ネットワーク
-    convert_model = convert_network.build_network()
+    convert_model = convert_network.build_network(input_shape)
     print('>> build convert model')
     # 学習ネットワークインスタンス化
-    train_net = train_network.TrainNet()
+    train_net = train_network.TrainNet(input_shape)
     # 学習ネットワーク構築
     train_model = train_net.rebuild_vgg16(
         convert_model.output, True, True, convert_model.input)
@@ -36,13 +36,13 @@ def build():
     style_image = style_images.load_image(STYLE_IMAGE_PATH, input_shape)
     print('>> load style image')
     # スタイル特徴量抽出モデル
-    y_style_model = style_images.style_feature()
+    y_style_model = style_images.style_feature(input_shape)
     print('>> build y_style model')
     # スタイル特徴量を抽出する
     y_style_pred = y_style_model.predict(style_image)
     print('>> get y_style_pred')
     # コンテンツ特徴量抽出モデル
-    contents_model = contents_images.contents_feature()
+    contents_model = contents_images.contents_feature(input_shape)
     print('>> build contents model')
     # ジェネレータ生成
     generator = create_generator(y_style_pred, contents_model)
@@ -138,7 +138,8 @@ def test(covert_model, step, now, input_shape=(224, 224, 3)):
 def create_generator(y_style_pred, y_contents_model):
     return train_generator_per_epoch(
                     get_img_path_list(), BATCH_SIZE,
-                    y_style_pred, y_contents_model, True, EPOCH_SIZE)
+                    y_style_pred, y_contents_model, True, EPOCH_SIZE,
+                    y_style_pred.shape[:2])
 
 
 # コンテンツ入力画像のパスをすべて取得
@@ -150,7 +151,8 @@ def get_img_path_list():
 
 # 1エポックあたりの訓練データジェネレータ
 def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
-                              contents_model, shuffle=True, epoches=None):
+                              contents_model, shuffle=True, epoches=None,
+                              input_shape=(224, 224, 3)):
     # 訓練データ数
     train_imgs = len(img_path_list)
     # 1エポックにおけるバッチ処理回数（切り上げ）
@@ -172,7 +174,8 @@ def train_generator_per_epoch(img_path_list, batch_size, y_style_pred,
             start, end = batch_size * step, batch_size * (step + 1)
             # バッチ単位入力画像
             batch_input_images = get_images_array_from_path_list(
-                                                   img_path_list[start:end])
+                                                   img_path_list[start:end],
+                                                   input_shape[:2])
             # バッチ単位に拡張
             y_styles_pred = [np.repeat(feature, batch_input_images.shape[0],
                              axis=0) for feature in y_style_pred]
